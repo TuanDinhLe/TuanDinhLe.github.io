@@ -1,0 +1,198 @@
+body {
+	margin: 0;
+	padding: 0;
+}
+
+#header {
+	height: 100vh;
+	background:linear-gradient();
+	background-position: center;
+	background-size: cover;
+	background-attachment: fixed;
+}
+
+.user-box {
+	top:50%;
+	left:50%;
+	position:absolute;
+	transform: translate(-50%,-50%);
+	font-family: "Roboto", "Mono";
+	font-weight: 100;
+	font-size: xx-large;
+}
+
+.user-box-img {
+	height: 10px;
+    width: 1px;
+	position:absolute;
+	transform: translate(-50%,-50%);
+}	
+
+#Pic
+{
+  height: 1000px;
+  width: 1000px;
+}
+#Pic img
+{
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto;
+  display: block;
+}
+
+#ab {
+	font-size: large;
+}
+
+html {
+	scroll-behavior: smooth;
+  }
+
+.subheading {
+	font-size: larger;
+	position: relative;
+}
+
+#about {
+	font-family: "Roboto", "Mono";
+	font-weight: 100;
+	font-size: xx-large;
+}
+
+#projects {
+	width: 820px;
+	overflow:hidden;
+}
+
+#projects li {
+	float:left;
+	margin-right:25px;
+	text-align: center;
+	border-bottom: 1px solid;
+	height:105px;
+	margin-bottom: 30px;
+	widows: 180px;
+}
+
+#projects li:hover {
+	border-bottom: 1px solid;
+	height:185px;
+}
+
+#projects li img {
+	height:120px;
+	width:185px;
+}
+
+img {
+	max-width: 1000%;
+	max-height: 1000%;
+	}
+	
+	.auto-resize-portrait {
+	height: 100px;
+	width: 50px;
+	}
+	
+	.auto-resize-landscape {
+	height: 100px;
+	width: 80px;
+	}
+	
+	.auto-resize-square {
+	height: 75px;
+	width: 75px;
+	}
+	
+	.auto-resize-big{
+	width:150px;
+	height:150px;
+	}
+
+
+
+
+
+
+
+
+
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 60px;
+  }
+
+.square {
+	width: 30%;
+	background: purple;
+	padding-bottom: 30%;
+	float: left;
+	margin: 1.66%;
+	border-radius: 15%;
+	transition: background 0.6s;
+	-webkit-transition: background 0.6s;
+	-moz-transition: background 0.6s;
+}
+
+#container {
+	margin: 20px auto;
+	max-width: 600px;
+}
+
+h1 {
+	text-align: center;
+	line-height: 1.1;
+	font-weight: normal;
+	color: black;
+	background: white;
+	margin: 0;
+	padding: 17px 0;
+	font-family: "Roboto", "Mono";
+}
+
+#colorDisplay {
+	font-size: 200%;
+}
+
+#Message {
+	display: inline-block;
+	width: 20%;
+	font-size: inherit;
+	color: steelblue;
+}
+
+#stripe {
+	background: white;
+	height: 30px;
+	text-align: center;
+	color: black;
+}
+
+.selected {
+	color: white;
+	background: steelblue;
+}
+
+button {
+	border: none;
+	background: none;
+	text-transform: uppercase;
+	height: 100%;
+	font-weight: 700;
+	color: steelblue;
+	letter-spacing: 1px;
+	font-size: inherit;
+	transition: all 0.3s;
+	-webkit-transition: all 0.3s;
+	-moz-transition: all 0.3s;
+	outline: none;
+}
+
+button:hover {
+	color: white;
+	background: steelblue;
+}
