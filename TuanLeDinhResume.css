@@ -20,7 +20,6 @@ body {
 
 #ab {
 	font-size: large;
-	background-image: url("img/tech.jpg");
 }
 
 .user-box {
@@ -44,8 +43,8 @@ body {
 {
   height: 1000px;
   width: 1000px;
-  background-image: url("img/tech.jpg");
 }
+
 
 #Pic img
 {
@@ -66,8 +65,7 @@ html {
 
 #about {
 	font-family: "Roboto", "Mono";
-	font-weight: strong;
-	font-size: xx-large;
+	background-image: url("img/tech.jpg");
 }
 
 #projects {
@@ -134,7 +132,14 @@ img {
 	background-image: url("img/tech.jpg");
 }
 
-
+#c {
+	top:0;
+	font-weight: bold;
+	font-size: large;
+	position: relative;
+	font-family: "Roboto", "Mono";
+	text-align: center;
+}
 
 
 
