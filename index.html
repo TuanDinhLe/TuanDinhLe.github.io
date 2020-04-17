@@ -3,7 +3,7 @@
 <head>
     <title> Tuan Le Dinh Resume</title>
     <link rel="shortcut icon" href="http://www.designedweb.co.uk/wp-content/uploads/2015/10/graphic-design-icon.png">
-	<link rel="stylesheet" type="text/css" href="/css/TuanLeDinhResume.css">
+	<link rel="stylesheet" type="text/css" href="TuanLeDinhResume.css">
 	<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
@@ -19,9 +19,9 @@
 				<ul class="nav navbar-nav flex-fill justify-content-center">
 					<li class="nav-item active"><a class="nav-link" href="#header"></a></li>
 					<li class="nav-item active"><a class="nav-link" href="#about"><strong>About</strong></a></li>
-					<li class="nav-item active"><a class="nav-link" href="#projects"><strong>Projects</strong></a></li>
-					<li class="nav-item active"><a class="nav-link" href="https://drive.google.com/file/d/1XeA9hUk8dtHRIRLYV5Cft7Mt1zjpAall/view?usp=sharing"><strong>Resume</strong></a></li>
-					<li class="nav-item active"><a class="nav-link" href="mailto:ledt@umanitoba.ca?subject=Hey Tuan!"><strong>Contacts</strong></a></li>
+					<li class="nav-item active"><a class="nav-link" href="#project"><strong>Projects</strong></a></li>
+					<li class="nav-item active"><a class="nav-link" href="https://drive.google.com/file/d/1XeA9hUk8dtHRIRLYV5Cft7Mt1zjpAall/view?usp=sharing" target="_blank"><strong>Resume</strong></a></li>
+					<li class="nav-item active"><a class="nav-link" href="mailto:ledt@umanitoba.ca?subject=Hey Tuan!" target="_blank"><strong>Contacts</strong></a></li>
 				</ul>
 			</div>
 		</nav>
@@ -30,10 +30,10 @@
 	<section id="header">
 		<div class="container" text-center>
 		<div class="user-box">
-		<p> Hello there! </p>
-		<p>I am Tuan Le, an enthusiast </p>
-		<p> software developer who love datas </p>
-		<p>	and nice visual experiences!</p>
+		<p style="text-align:center">Hello there!</p>
+		<p style="text-align:center">I am Tuan Le, an enthusiast </p>
+		<p style="text-align:center">software developer who love datas </p>
+		<p style="text-align:center"> and nice visual experiences!</p>
 		</div>
 		</div>
 	</section>
@@ -41,39 +41,39 @@
 <!---------------------------------------------------------------------------->	
 	<section class="About">
 		<div class="about-container" id="about">
-			<div class="row no-gutters">
-				<div id = "Pic" class="col-sm-5">
-					<img src="img/ResumePics.bmp">;
-				</div>
-				<div class="col-sm-5 wrap-about py-5 ftco-animate">
-				<div class="heading-section mt-5 mb-4">
-					<div class="pl-lg-5 ml-md-5">
-					<span class="subheading"> <p>About Myself</p></span>
-					</div>
-				</div>
-				<div class="pl-lg-5 ml-md-5" id="ab">
-					<p>
-					I am currently a 2nd year Computer Science student at University of Manitoba, and a software developer in training! I am currently working as a freelancer at Beeblee, an online ordering system integration agency and I have my first project made here, check it out below!
-					</p>
-					<p>
-					Before that, I work with UMSCO- University of Manitoba Supply Chain Organization at Asper School of Business as an Event Coordinator to connect undergraduate students with Supply Chain professionals.
-					</p>
-					</div>
-				</div>
+			<div class="row no-gutters" style="height: 600px;">
+			<div id = "Pic" class="col-sm-5">
+				<img src="img/ResumePics.bmp">;
+			</div>
+			<div class="col-sm-5 wrap-about py-5 ftco-animate" id="c">
+			<div class="heading-section mt-5 mb-4">
+				<div class="pl-lg-5 ml-md-5">
+				<span class="subheading"> <p>About Myself</p></span>
 				</div>
 			</div>
+			<div class="pl-lg-5 ml-md-5" id="ab">
+				<p>
+				I am currently a 2nd year Computer Science student at University of Manitoba, and a software developer in training! I am currently working as a freelancer at Beeblee, an online ordering system integration agency and I have my first project made here, check it out below!
+				</p>
+				<p>
+				Before that, I work with UMSCO- University of Manitoba Supply Chain Organization at Asper School of Business as an Event Coordinator to connect undergraduate students with Supply Chain professionals.
+				</p>
+				</div>
+			</div>
+			</div>
+		</div>
 		</div>
 	</section>
 
 <!---------------------------------------------------------------------------->	
-	<section class="Projects" id="projects">
+	<section class="Projects" id="project">
 		<footer class="ftco-footer ftco-bg-dark ftco-section">
-			<div class="container">
-			<div class="row mb-5">
-
+			<div class="container" id="container1">
+				<p style="text-align:center;" id="a"><strong>My projects</strong><p>
+			<div class="row mb-5" id = "proj">
 				<div class="col-md-6 col-lg-4">
 					<div class="ftco-footer-widget mb-4">
-					<h2 class="ftco-heading-2">Watt Street Bistro Restaurant!</h2>
+					<h2 class="ftco-heading-2">Watt Street Bistro!</h2>
 					<div class="thumb d-sm-flex">
 						<a
 						href="http://wattstreetbistro.beeblee.com/" target="_blank"
