@@ -223,3 +223,8 @@ button:hover {
 	color: white;
 	background: steelblue;
 }
+
+.intro {
+	font-weight: bold;
+	font-size: larger;
+}
