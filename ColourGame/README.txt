@@ -1,0 +1,1 @@
+1. How to play the game: the RGB(x, y, z) line in the game's header represenrs ratio of the colour red, green and blue. If we mix up these ratio and create a colour, can you guess which one is it?
