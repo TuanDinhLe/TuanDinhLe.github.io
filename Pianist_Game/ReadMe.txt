@@ -1,0 +1,1 @@
+1. How to play the game: each keyboard correspond to a certain sound. Try it and become a pianist in training!
