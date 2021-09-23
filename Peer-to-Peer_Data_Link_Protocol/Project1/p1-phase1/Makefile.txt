@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall
 LDFLAGS = -lpthread
-OBJFILES = phase_1.o physical.o
+OBJFILES = p1.o physical.o
 TARGET = p1
 all: $(TARGET)
 
