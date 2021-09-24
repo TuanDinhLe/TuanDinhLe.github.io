@@ -30,18 +30,23 @@ void* sendData(void* args) {
             while (getline(&msg, &line_size, input_file) != -1) {
                 pthread_mutex_lock(& physical_layer.physical->L2RLock);
 
+                int i = 0;
+                int len = 0;
+                while (msg[i++] != '\0') {
+                    len+=1;
+                }
+                msg[len-1] = '\0';
+
                 while (!physical_layer.physical->L2RReady) {
                     pthread_cond_wait(& physical_layer.physical->L2RTxSignal, & physical_layer.physical->L2RLock);
                 }
 
-                printf("Send data from the Left\n");
-                printf("Message to be sent is %s with size %zu\n", msg, strlen(msg));
-                transmitFrame(L2R, (unsigned char const * const) msg, (const int) strlen(msg));
+                printf("Send data from the Left to the Right\n");
+                printf("Message to be sent is %s with size %d\n", msg, len);
+                transmitFrame(L2R, (unsigned char const * const) msg, (const int) len);
 
                 pthread_cond_signal(& physical_layer.physical->L2RRxSignal);
                 pthread_mutex_unlock(& physical_layer.physical->L2RLock);
-
-                
             }
             fclose(input_file);  
         }    
@@ -53,13 +58,20 @@ void* sendData(void* args) {
             while (getline(&msg, &line_size, input_file) != -1) {
                 pthread_mutex_lock(& physical_layer.physical->R2LLock);
 
+                int i = 0;
+                int len = 0;
+                while (msg[i++] != '\0') {
+                    len+=1;
+                }
+                msg[len-1] = '\0';
+
                 while (!physical_layer.physical->R2LReady) {
                     pthread_cond_wait(& physical_layer.physical->R2LTxSignal, & physical_layer.physical->R2LLock);
                 }
 
-                printf("Send data from the Right\n");
-                printf("Message to be sent is %s with size %zu\n", msg, strlen(msg));
-                transmitFrame(R2L, (unsigned char const * const) msg, (const int) strlen(msg));
+                printf("Send data from the Right to the Left\n");
+                printf("Message to be sent is %s with size %d\n", msg, len);
+                transmitFrame(R2L, (unsigned char const * const) msg, (const int) len);
 
                 pthread_cond_signal(& physical_layer.physical->R2LRxSignal);
                 pthread_mutex_unlock(& physical_layer.physical->R2LLock);
@@ -77,26 +89,30 @@ void* receiveData(void* args) {
     FILE* output_file;
     unsigned char data; 
 
-    while (1) {
-        output_file = fopen(receive_signal.filename, "a");
-    
-        if (physical_layer.direction == L2R) { 
+    if (physical_layer.direction == L2R) {
+        while (1) {
+            output_file = fopen(receive_signal.filename, "a");
             pthread_mutex_lock(& physical_layer.physical->L2RLock);
 
             while (physical_layer.physical->L2RReady) {
                 printf("Waiting on the Right\n");
                 pthread_cond_wait(& physical_layer.physical->L2RRxSignal, & physical_layer.physical->L2RLock);
             }
-            printf("Receive data on the Righ\n");
+            printf("Incoming data from the Left to the Right\n");
 
             while ((data = receiveByte(L2R))) {
                 fprintf(output_file, "%c", data);
             }     
+            fprintf(output_file, "\n");
             
             pthread_mutex_unlock(& physical_layer.physical->L2RLock);
             pthread_cond_signal(& physical_layer.physical->L2RTxSignal);
+            fclose(output_file);
         }
-        else if (physical_layer.direction == R2L) {
+    }
+    else if (physical_layer.direction == R2L) {
+        while (1) {
+            output_file = fopen(receive_signal.filename, "a");
             pthread_mutex_lock(& physical_layer.physical->R2LLock);
 
             while (physical_layer.physical->R2LReady) {
@@ -104,18 +120,20 @@ void* receiveData(void* args) {
                 pthread_cond_wait(& physical_layer.physical->R2LRxSignal, & physical_layer.physical->R2LLock);
             }
 
-            printf("Receive data on the Left\n");
+            printf("Incoming data from the Right to the Left\n");
             while ((data = receiveByte(R2L))) {
                 fprintf(output_file, "%c", data);
             }   
+            fprintf(output_file, "\n");
             
             pthread_mutex_unlock(& physical_layer.physical->R2LLock);
             pthread_cond_signal(& physical_layer.physical->R2LTxSignal);
+            fclose(output_file);
         }
-    fclose(output_file);
     }
-    return NULL;
+    
 
+    return NULL;
 }
 
 int main(int argc, char *argv[]) {
@@ -135,14 +153,12 @@ int main(int argc, char *argv[]) {
         Signal receive_signal_R2L = {args_R2L, output_file};
 
         pthread_create(&left, NULL, sendData, (void *) &trasmit_signal_L2R);
-        pthread_create(&right, NULL, sendData, (void *) &trasmit_signal_R2L);
         pthread_create(&right, NULL, receiveData, (void *) &receive_signal_L2R);
+        pthread_create(&right, NULL, sendData, (void *) &trasmit_signal_R2L);
         pthread_create(&left, NULL, receiveData, (void *) &receive_signal_R2L);
         
+        
         pthread_exit(NULL);
-        pthread_join(left, NULL);
-        pthread_join(right, NULL);
-           
         cleanPhysical();
     }
     return 0;
