@@ -11,17 +11,17 @@ def SynScan(host):
     """
     answers,unanswers = sr(IP(dst=host)/TCP(dport=ports,flags="S"),timeout=2,verbose=0)
     print("Open ports at %s:" % host)
-    for (s,r,) in ans:
-        if s[TCP].dport == r[TCP].sport:
-            print(s[TCP].dport)
+    for (sent_packet,received_packet,) in answers:
+        if sent_packet[TCP].dport == received_packet[TCP].sport:
+            print(sent_packet[TCP].dport)
 
 def DNSScan(host):
     """
     Send a DNS request and wait for response to verify if there are
     DNS servers waiting at destination ports.
     """
-    ans,unans = sr(IP(dst=host)/UDP(dport=53)/DNS(rd=1,qd=DNSQR(qname="google.com")),timeout=2,verbose=0)
-    if ans:
+    answers,unanswers = sr(IP(dst=host)/UDP(dport=53)/DNS(rd=1,qd=DNSQR(qname="google.com")),timeout=2,verbose=0)
+    if answers:
         print("DNS Server at %s"%host)
     
 host = "8.8.8.8"
