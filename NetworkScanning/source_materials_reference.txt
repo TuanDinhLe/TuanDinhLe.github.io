@@ -1,1 +1,1 @@
-Reference for source codes: https://www.coursera.org/learn/pythonforcybersecurity-introduction?specialization=pythonforcybersecurity
+Source reference: https://www.coursera.org/learn/pythonforcybersecurity-introduction?specialization=pythonforcybersecurity
