@@ -69,15 +69,18 @@ GitHub
 
 **PROJECTS**
 
-**Project 1:** [**Network Scanning**](https://github.com/TuanDinhLe/TuanDinhLe.github.io/tree/master/NetworkScanning) **| Personal Project** September 2021
+**Project 1:** [**Network Scanning**](https://github.com/TuanDinhLe/TuanDinhLe.github.io/tree/master/NetworkScanning) 
+**Personal Project** September 2021
 
 A Python application that explores target computer networks&#39; vulnerabilities as part of the Reconnaissance Tactic of the MITRE ATT&amp;CK framework.
 
-**Project 2:** [**Sentiment Analysis**](https://github.com/TuanDinhLe/TuanDinhLe.github.io/tree/master/SentimentAnalysis) **| Personal Project** April 2021
+**Project 2:** [**Sentiment Analysis**](https://github.com/TuanDinhLe/TuanDinhLe.github.io/tree/master/SentimentAnalysis) 
+**Personal Project** April 2021
 
 Based on newspaper headlines about public companies whose stock tickers are provided as inputs, this Python application returns time plots that demonstrate the companies&#39; popularity within the available timeframe.
 
-**Project 3:** [**TermSetter**](https://code.cs.umanitoba.ca/3350-winter-2021-a02/group-6/aurora-but-better-a02-group-6) **| Academic Group Project** Winter 2021
+**Project 3:** [**TermSetter**](https://code.cs.umanitoba.ca/3350-winter-2021-a02/group-6/aurora-but-better-a02-group-6) 
+**Academic Group Project** Winter 2021
 
 A Java-based android application that allows students to register and login to their personal accounts, add courses for an academic term, and track their weekly timetable.
 
