@@ -48,7 +48,7 @@ GitHub
 
 **INDUSTRY EXPERIENCE**
 
-**Associate Software Developer | Data Office, IG Wealth Management**
+**Associate Software Developer, IG Wealth Management**
 
 **Coop Work Term 1** May 2021–Aug 2021
 
@@ -59,7 +59,7 @@ GitHub
 - Automated the translation of instruction files to populate database tables by implementing a metadata format conversion application, increasing the accuracy of the produced instruction files while enabling other developers to work on more productive tasks.
 - Kept the documentation of the Data Office&#39;s internal tools up to date with their latest performance, minimizing the difficulties when troubleshooting and expanding the scope of these applications.
 
-**Web Developer | Beeblee**
+**Web Developer, Beeblee**
 
 **Freelancer** Feb 2020-June 2020
 
@@ -104,7 +104,7 @@ A Java-based android application that allows students to register and login to t
 
 **ADDITIONAL WORKING EXPERIENCE**
 
-**Account Executive | Amigo Payments**
+**Account Executive, Amigo Payments**
 
 **Part-Time** Oct 2019-Sep 2020
 
@@ -112,7 +112,7 @@ A Java-based android application that allows students to register and login to t
 - Contacted small-and-medium sized business owners across Canada to assess their understanding of the current Credit Card Processing System to gather market intelligence and provide personalized product recommendations.
 - Evaluated businesses&#39; annual costs associated with the current payment terminal provider to make comparisons with more cost-efficient and customer-oriented providers that Amigo Payments can offer to the business owners.
 
-**Store Assistant | Scope Clearance House**
+**Store Assistant, Scope Clearance House**
 
 **Volunteer** Oct 2016-May 2017
 
