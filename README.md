@@ -55,7 +55,7 @@ Note: This is the repo&#39;s address that can be used to &#39;clone&#39; it to a
 
 #### **Clone the repo:**
 
-- Open your terminal by typing &#39;cmd&#39; on Windows Search bar,
+- Open your terminal in VS Code by clicking on the Terminal Tab at the top.
 - Navigate to a directory you want to clone the repo to using the command &#39;cd local\_repo\_directory&#39; on the terminal.
 - Type &#39;git clone remote\_repo\_address&#39; on it, where address is the content copied from the clipboard in the previous step.
 
