@@ -34,7 +34,7 @@ As remarked by Andrew Etter, a static website is highly preferable to a traditio
 
 - [A GitHub account.](https://github.com/join)
 - [Visual Studio Code.](https://code.visualstudio.com/download)
-- Your resume (duh!).
+- Your resume formatted in GitHub Flavored Markdown.
 ****
 ### **Instructions:**
 
