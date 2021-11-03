@@ -17,35 +17,35 @@ GPA: 4.07
 
 **Programming Languages**
 
-Python
+- Python
 
-Java
+- Java
 
-JavaScript (React)
+- JavaScript (React)
 
-SQL (SAP HANA + Sybase IQ)
+- SQL (SAP HANA + Sybase IQ)
 
-Neo4j
+- Neo4j
 
-C/C++
+- C/C++
 
 **Technical Services**
 
-Google Big Query
+- Google Big Query
 
-Git Version Control
+- Git Version Control
 
-Bitbucket
+- Bitbucket
 
-JIRA
+- JIRA
 
-Confluence
+- Confluence
 
-SAP Data Service Designer
+- SAP Data Service Designer
 
-Stonebranch Scheduler
+- Stonebranch Scheduler
 
-GitHub
+- GitHub
 
 **INDUSTRY EXPERIENCE**
 
