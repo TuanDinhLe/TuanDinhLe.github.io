@@ -1,6 +1,7 @@
 # **Tuan Le Dinh**
 
-**204-590-7099** | **[ledt@myumanitoba.ca](mailto:ledt@myumanitoba.ca)**
+**204-590-7099** \
+**[ledt@myumanitoba.ca](mailto:ledt@myumanitoba.ca)**
 
 **EDUCATION**
 
