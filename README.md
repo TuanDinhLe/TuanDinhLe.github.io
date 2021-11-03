@@ -68,7 +68,9 @@ Note: These steps provide you with a local copy of the remote repo that you can 
 - Then, type &#39;git commit -m &quot;Add index.md&quot;.&#39; to save the change to Git&#39;s content tracking system.
 - Type &#39;git push&#39; to push the current version of the local repo to the remote repo.
 
-Voila! If all steps are done correctly, following the url: username.github.io will redirect you to your new static website where the content of index.md is rendered nicely in Markdown Format.
+![Voila!] (https://github.com/TuanDinhLe/TuanDinhLe.github.io/blob/master/gif/Display_Resume.gif)
+
+If all steps are done correctly, following the url: username.github.io will redirect you to your new static website where the content of index.md is rendered nicely in Markdown Format.
 
 #### **Choose a theme for your new website:**
 
