@@ -1,12 +1,12 @@
 # **Tuan Le Dinh**
 
-204-590-7099 | [ledt@myumanitoba.ca](mailto:ledt@myumanitoba.ca)
+**204-590-7099** | **[ledt@myumanitoba.ca](mailto:ledt@myumanitoba.ca)**
 
 **EDUCATION**
 
-**BACHELOR OF SCIENCE - COMPUTER SCIENCE MAJOR** 2018-present
+**BACHELOR OF SCIENCE - COMPUTER SCIENCE MAJOR, UNIVERSITY OF MANITOBA** 
 
-**UNIVERSITY OF MANITOBA**
+**2018-present**
 
 Specializing in: Software Engineering and Database Management.
 
@@ -14,7 +14,7 @@ GPA: 4.07
 
 **TECHNICAL SKILLS**
 
-**Programming Language**
+**Programming Languages**
 
 Python
 
@@ -50,9 +50,10 @@ GitHub
 
 **Associate Software Developer, IG Wealth Management** 
 
-**Coop Work Term 1** May 2021–Aug 2021
+**Coop Work Term 1 & Part-Time Employment** 
 
-**Part-Time Employment** Sept 2021–Dec 2021
+**May 2021–Aug 2021, Sept 2021–Dec 2021**
+
 
 - Developed and tested a Python application that archived data from SAP HANA database to store on the Fileshare servers, freeing an extra 200GBs for subsequent projects.
 - Successfully identified all data conversion errors coming from a 3rd party API and provided comprehensive summaries on the errors found by building a Python testing application, accelerating the team&#39;s effort to deliver high-quality data to all parts of the organization.
@@ -61,7 +62,9 @@ GitHub
 
 **Web Developer, Beeblee**
 
-**Freelancer** Feb 2020-June 2020
+**Freelancer** 
+
+**Feb 2020-June 2020**
 
 - Enabled restaurant owners to receive online orderings from customers directly without going through a 3rd party food ordering service by developing their websites, increasing revenue earned from each order by 25%.
 - Designed and built user-friendly interfaces for clients&#39; websites using HTML, CSS, and JavaScript, increasing online traffic to their websites by 12% on average.
@@ -83,19 +86,21 @@ A Java-based android application that allows students to register and login to t
 
 **COMMUNITY INVOLVEMENT &amp; AWARDS**
 
-**Event Coordinator** Aug 2018-Apr 2019
+**Event Coordinator, University of Manitoba Supply Chain Organization (UMSCO)** 
 
-**University of Manitoba Supply Chain Organization (UMSCO)**
+**Aug 2018-Apr 2019**
 
 - Collaborated with UMSCO&#39;s general council to plan and execute Annual Case Competition and business networking events to connect UMSCO&#39;s members with business professionals.
 
-**Volunteer Orientation Day Leader** Oct 2017
+**Volunteer Orientation Day Leader, International College of Manitoba** 
 
-**International College of Manitoba**
+**Oct 2017**
 
 - Led tours around the campus and encouraged the new students to share their respective stories with other new students and familiarize themselves with the University of Manitoba.
 
-**I.H. Asper School of Business Entrance Scholarships ($500)** Oct 2018
+**I.H. Asper School of Business Entrance Scholarships ($500)** 
+
+**Oct 2018**
 
 - Attained excellent academic performance upon entering Asper School of Business.
 
@@ -103,7 +108,9 @@ A Java-based android application that allows students to register and login to t
 
 **Account Executive, Amigo Payments**
 
-**Part-Time** Oct 2019-Sep 2020
+**Part-Time** 
+
+**Oct 2019-Sep 2020**
 
 - Fostered strong relationships with existing customers and introduced loyal, satisfied customers to the potential prospects, increasing closing rate up to 25%.
 - Contacted small-and-medium sized business owners across Canada to assess their understanding of the current Credit Card Processing System to gather market intelligence and provide personalized product recommendations.
@@ -111,9 +118,11 @@ A Java-based android application that allows students to register and login to t
 
 **Store Assistant, Scope Clearance House**
 
-**Volunteer** Oct 2016-May 2017
+**Volunteer** 
 
 **Wakefield, United Kingdom**
+
+**Oct 2016-May 2017**
 
 - Took initiative to understand customers&#39; specific needs to provide personalized service and recommend appropriate products to enhance their shopping experience.
 - Collaborated with coworkers in a friendly yet professional manner to provide consistent, high-quality customer service.
