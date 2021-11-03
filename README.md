@@ -38,7 +38,7 @@ As remarked by Andrew Etter, a static website is highly preferable to a traditio
 ****
 ### **Instructions:**
 
-##### **Format your resume using Visual Studio Code:**
+#### **Format your resume using Visual Studio Code:**
 
 - Install Visual Studio Code (VS Code) using the link above.
 - Open VS Code and create a new File, save, and name it index.md.
@@ -46,14 +46,14 @@ As remarked by Andrew Etter, a static website is highly preferable to a traditio
 
 Note: You can also use a browser-based editor to observe the markdown format changes in real-time!
 
-##### **Create a new Git repository and retrieve its address:**
+#### **Create a new Git repository and retrieve its address:**
 
 - Go to your GitHub account and create a new public repo with the following name: repo username.github.io, where username is your account&#39;s name.
 - On the repo&#39;s page, click the green &#39;Code&#39; button, and copy the content to the clipboard.
 
 Note: This is the repo&#39;s address that can be used to &#39;clone&#39; it to a local directory (a local repo)) on your computer, allowing you to make changes and publish those changes to the repo on Git (a remote repo).
 
-##### **Clone the repo:**
+#### **Clone the repo:**
 
 - Open your terminal by typing &#39;cmd&#39; on Windows Search bar,
 - Navigate to a directory you want to clone the repo to using the command &#39;cd local\_repo\_directory&#39; on the terminal.
@@ -61,7 +61,7 @@ Note: This is the repo&#39;s address that can be used to &#39;clone&#39; it to a
 
 Note: These steps provide you with a local copy of the remote repo that you can make changes to and publish it.
 
-##### **Add the resume to Git repo and publish it:**
+#### **Add the resume to Git repo and publish it:**
 
 - When finished cloning, copy index.md to the directory that you store the local repo with File Explorer.
 - Switch back to the terminal, run &#39;git add index.md&#39; to add the file to the staging area of Git.
@@ -70,7 +70,7 @@ Note: These steps provide you with a local copy of the remote repo that you can 
 
 Voila! If all steps are done correctly, following the url: username.github.io will redirect you to your new static website where the content of index.md is rendered nicely in Markdown Format.
 
-##### **Choose a theme for your new website:**
+#### **Choose a theme for your new website:**
 
 - On GitHub, navigate to the repo username.github.io and select the &#39;Settings&#39; symbol.
 - On the Settings page, look for the &#39;Pages&#39; tab on the left-hand side menu.
@@ -79,7 +79,7 @@ Voila! If all steps are done correctly, following the url: username.github.io wi
 
 Note: You can always follow the above steps again to change to a new default theme.
 
-##### **Change the title of your website:**
+#### **Change the title of your website:**
 
 - Using the terminal to navigate to your local repo directory.
 - Type &#39;git pull&#39; to get the latest change from the remote repo to get the newly generated _config.yml file. 
@@ -95,7 +95,7 @@ Note: You can always follow the above steps again to change to a new default the
 
 It is helpful to write a good commit message, you will look at it in the future!
 
-##### **Finish!**
+#### **Finish!**
 
 And that&#39;s how you host your Resume using GitHub Pages and customize it with Jekyll. Thank you for following this guide till the end!
 
