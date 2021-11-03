@@ -44,14 +44,14 @@ As remarked by Andrew Etter, a static website is highly preferable to a traditio
 - Open VS Code and create a new File, save, and name it index.md.
 - Get your resume ready, and format it in GitHub Flavored Markdown using the tutorials from the More Resources section below.
 
-You can also use a browser-based editor to observe the markdown format changes in real-time!
+Note: You can also use a browser-based editor to observe the markdown format changes in real-time!
 
 ##### **Create a new Git repository and retrieve its address:**
 
 - Go to your GitHub account and create a new public repo with the following name: repo username.github.io, where username is your account&#39;s name.
 - On the repo&#39;s page, click the green &#39;Code&#39; button, and copy the content to the clipboard.
 
-This is the repo&#39;s address that can be used to &#39;clone&#39; it to a local directory (a local repo)) on your computer, allowing you to make changes and publish those changes to the repo on Git (a remote repo).
+Note: This is the repo&#39;s address that can be used to &#39;clone&#39; it to a local directory (a local repo)) on your computer, allowing you to make changes and publish those changes to the repo on Git (a remote repo).
 
 ##### **Clone the repo:**
 
@@ -59,7 +59,7 @@ This is the repo&#39;s address that can be used to &#39;clone&#39; it to a local
 - Navigate to a directory you want to clone the repo to using the command &#39;cd local\_repo\_directory&#39; on the terminal.
 - Type &#39;git clone remote\_repo\_address&#39; on it, where address is the content copied from the clipboard in the previous step.
 
-These steps provide you with a local copy of the remote repo that you can make changes to and publish it.
+Note: These steps provide you with a local copy of the remote repo that you can make changes to and publish it.
 
 ##### **Add the resume to Git repo and publish it:**
 
@@ -75,21 +75,29 @@ Voila! If all steps are done correctly, following the url: username.github.io wi
 - On GitHub, navigate to the repo username.github.io and select the &#39;Settings&#39; symbol.
 - On the Settings page, look for the &#39;Pages&#39; tab on the left-hand side menu.
 - Navigate to the theme-chooser section and choose a theme.
-- Access the url username.github.io to find out what the hosted resume looks like in anew theme.
+- Access the url username.github.io to find out what the hosted resume looks like in your newly chosen theme.
+
+Note: You can always follow the above steps again to change to a new default theme.
 
 ##### **Change the title of your website:**
 
-- Using the terminal to navigate to your local repo directory, then type &#39;git pull&#39; to get the latest change from the remote repo. You should see a new file called \_config.yml, this is used to set the theme to your website.
-- Then, open \_config.yml using Visual Studio Code, add in these 2 extra lines:
+- Using the terminal to navigate to your local repo directory.
+- Type &#39;git pull&#39; to get the latest change from the remote repo to get the newly generated _config.yml file. 
+- Open \_config.yml, which is your static website theme's config file.
+- Add in these 2 extra lines:
 
 	title: [The title of your site] \
 	description: [A short description of your site&#39;s purpose]
 
-- Then, similarly to the steps above, you &#39;git add \_config.yml&#39;, then &#39;git commit &quot;Add title and description to static website&quot;.&#39;, and then &#39;git push&#39;. It is helpful to write a good commit message, you will look at it in the future!
+- Type &#39;git add \_config.yml&#39; to add the file to the staging area of Git.
+- Type &#39;git commit &quot;Add title and description to static website&quot;.&#39; to save the change to Git&#39;s content tracking system.
+- Type &#39;git push&#39; to push the current version of the local repo to the remote repo.. 
+
+It is helpful to write a good commit message, you will look at it in the future!
 
 ##### **Finish!**
 
-And that&#39;s how you host your Resume using GitHub Pages and customize it with Jekyll. Thank you for following this guide till this point!
+And that&#39;s how you host your Resume using GitHub Pages and customize it with Jekyll. Thank you for following this guide till the end!
 
 ### **More Resources:**
 
