@@ -1,18 +1,5 @@
-Camel Java Router Project
-=========================
+# To build the leader_election:
+Run `mvn clean install`
 
-=== How to build
-
-To build this project use
-
-    mvn install
-
-=== How to run
-
-You can run this example using
-
-    mvn camel:run
-
-=== More information
-
-You can find more information about Apache Camel at the website: http://camel.apache.org/
+## To run the leader_election:
+Run `java -jar target/leader_election-1.0-SNAPSHOT-jar-with-dependencies.jar`
