@@ -178,20 +178,22 @@ void *cpu_processing(void *args)
         // If lower_case thread start first, it will yield the lock
         // and wait for signal to wake up.
 
-        while (!new_task_ready)
+        while (STAILQ_EMPTY(&task_queues[RUNNING_QUEUE]))
         {
             printf("Thread ID %i waits.\n", tid);
-            pthread_cond_wait(&new_task_signal, &queues_lock[RUNNING_QUEUE]);
 
             // Terminate thread.
             if (done_scheduling && done_reading)
             {
                 pthread_mutex_unlock(&queues_lock[RUNNING_QUEUE]);
+                printf("Thread ID %i quits!!!!!!!!!!!\n", tid);
                 return NULL;
             }
-        }
-        new_task_ready = 0;
 
+            pthread_cond_wait(&new_task_signal, &queues_lock[RUNNING_QUEUE]);
+        }
+        printf("Thread ID %i gets the lock.\n", tid);
+        new_task_ready = 0;
         curr_task = dequeue(&task_queues[RUNNING_QUEUE]);
         printf("Task %s is being processed by thread id %i\n", curr_task.task_name, tid);
 
@@ -205,15 +207,15 @@ void *task_scheduling(void *args)
     printf("%i\n", num_cpu_threads);
     int empty_queues = 0;
 
-    //pthread_t *cpu_threads = malloc(sizeof(pthread_t) * num_cpu_threads);
+    pthread_t *cpu_threads = malloc(sizeof(pthread_t) * num_cpu_threads);
 
     task curr_task;
 
     // Initialize CPU threads
-    // for (int i = 0; i < num_cpu_threads; i++)
-    // {
-    //     pthread_create(&cpu_threads[i], NULL, cpu_processing, &cpu_threads[i]);
-    // }
+    for (int i = 0; i < num_cpu_threads; i++)
+    {
+        pthread_create(&cpu_threads[i], NULL, cpu_processing, &cpu_threads[i]);
+    }
 
     printf("Scheduling is here\n");
 
@@ -225,13 +227,12 @@ void *task_scheduling(void *args)
             {
                 pthread_mutex_lock(&queues_lock[i]);
                 curr_task = dequeue(&task_queues[i]);
+                printf("A task is removed from queue priority %i\n", i+1);
                 pthread_mutex_unlock(&queues_lock[i]);
-
-                printf("Done here\n");
 
                 pthread_mutex_lock(&queues_lock[RUNNING_QUEUE]);
                 enqueue(&task_queues[RUNNING_QUEUE], curr_task);
-                printf("New task is added to priotity %i queue\n", i+1);
+                printf("New task is added to the running queue\n");
                 new_task_ready = 1;
                 pthread_cond_signal(&new_task_signal);
                 pthread_mutex_unlock(&queues_lock[RUNNING_QUEUE]);
@@ -249,21 +250,23 @@ void *task_scheduling(void *args)
 
         empty_queues = 0;
     }
+
     new_task_ready = 1;
-    pthread_cond_signal(&new_task_signal);
+    pthread_cond_broadcast(&new_task_signal);
+    printf("Signal sent\n");
 
-    // for (int i = 0; i < num_cpu_threads; i++)
-    // {
-    //     pthread_join(cpu_threads[i], NULL);
-    // }
-
-    while (!STAILQ_EMPTY(&task_queues[RUNNING_QUEUE]))
+    for (int i = 0; i < num_cpu_threads; i++)
     {
-        pthread_mutex_lock(&queues_lock[RUNNING_QUEUE]);
-        curr_task = dequeue(&task_queues[RUNNING_QUEUE]);
-        pthread_mutex_unlock(&queues_lock[RUNNING_QUEUE]);
-        printf("Task name is: %s\n", curr_task.task_name);
+        pthread_join(cpu_threads[i], NULL);
     }
+
+    // while (!STAILQ_EMPTY(&task_queues[RUNNING_QUEUE]))
+    // {
+    //     pthread_mutex_lock(&queues_lock[RUNNING_QUEUE]);
+    //     curr_task = dequeue(&task_queues[RUNNING_QUEUE]);
+    //     pthread_mutex_unlock(&queues_lock[RUNNING_QUEUE]);
+    //     printf("Task name is: %s\n", curr_task.task_name);
+    // }
 
     return NULL;
 }
@@ -310,9 +313,9 @@ int main(int argc, char *argv[])
             if (args_count == 4)
             {
                 curr_task = parse_task(line);
-                printf("Getting tasks in from files.\n");
                 pthread_mutex_lock(&queues_lock[PRIORITY_1]);
                 enqueue(&task_queues[PRIORITY_1], curr_task);
+                printf("New task is added to queue priority 1.\n");
                 pthread_mutex_unlock(&queues_lock[PRIORITY_1]);
             }
             else if (args_count == 2)
