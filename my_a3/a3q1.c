@@ -17,18 +17,28 @@
 #include <assert.h>
 #include <sys/queue.h>
 #include <pthread.h>
+#include <time.h>
+
+#define NANOS_PER_USEC 1000
+#define USEC_PER_SEC   1000000
+
+#define TIME_SLICE 50
+#define ALLOTTED_TIME 200
+
+#define NUM_QUEUE 5
 
 #define MILISECOND_CONVERSION 0.001
 
-// Number of queues used in the simulation
-#define NUM_QUEUE 4
+// The done queue
+#define DONE_QUEUE 0
 
 // Indexes of ready queues with descending order of priority
-#define PRIORITY_1 0 
-#define PRIORITY_2 1
-#define PRIORITY_3 2
+#define PRIORITY_1 1 
+#define PRIORITY_2 2
+#define PRIORITY_3 3
+
 // The running queue
-#define RUNNING_QUEUE 3
+#define RUNNING_QUEUE 4
 
 // Max number of chaarcters of a line in task.txt
 #define MAX_LINE_LEN 100
@@ -39,6 +49,16 @@
 // Number of args in a task
 #define TASK_ARGS 4
 
+// Number of task types
+#define TASK_TYPES 4
+
+#define TASK_TYPE_1 0
+#define TASK_TYPE_2 1
+#define TASK_TYPE_3 2
+#define TASK_TYPE_IO 3
+
+typedef struct timespec time_spec;
+
 typedef struct TASK
 {
     char* task_name;
@@ -46,6 +66,9 @@ typedef struct TASK
     int task_length;
     int odd_of_io;
     int task_priority;
+    int alloted_time;
+    int is_first_run;
+    time_spec arrival_time;
 } task;
 
 typedef struct ENTRY 
@@ -58,13 +81,22 @@ STAILQ_HEAD(QUEUE_HEAD, ENTRY);
 
 typedef struct QUEUE_HEAD queue_head;
 
+typedef struct TIME_MANAGER
+{
+    time_t *total_turnaround_time;
+    time_t *total_response_time;
+    int *task_num;
+} time_manager;
+
+pthread_mutex_t time_manager_lock;
+
+time_manager recording;
+
 queue_head *task_queues;
 
 pthread_mutex_t *queues_lock;
 
 pthread_cond_t new_task_signal = PTHREAD_COND_INITIALIZER;
-
-int new_task_ready = 1;
 
 int done_scheduling = 0;
 int done_reading = 0;
@@ -84,6 +116,10 @@ int parse_delay_time(char *line);
 
 // Running the scheduler thread
 void *task_scheduling(void *args);
+
+static void microsleep(unsigned int usecs);
+
+time_spec diff(time_spec start, time_spec end);
 
 void enqueue(queue_head *head, task curr_task)
 {
@@ -140,6 +176,12 @@ task parse_task(char *line)
 
     curr_task.task_priority = 1;
 
+    curr_task.alloted_time = TIME_SLICE;
+
+    curr_task.is_first_run = 1;
+
+    clock_gettime(CLOCK_REALTIME, &curr_task.arrival_time);
+
     return curr_task;
 }
 
@@ -165,14 +207,21 @@ void *cpu_processing(void *args)
     //(void) args;
 
     int tid = *(int *) args;
+    int run_time = TIME_SLICE;
+    int finish = 0;
 
     task curr_task;
 
-    printf("Thread ID %i wakes up.\n", tid);
+    time_spec finish_time;
+    time_spec turnaround_time;
+    time_spec first_run_time;
+    time_spec response_time;
+
+    //printf("Thread ID %i wakes up.\n", tid);
 
     while (1)
     {
-        printf("Thread ID %i waits for lock.\n", tid);
+        //printf("Thread ID %i waits for lock.\n", tid);
         pthread_mutex_lock(&queues_lock[RUNNING_QUEUE]);
 
         // If lower_case thread start first, it will yield the lock
@@ -180,7 +229,7 @@ void *cpu_processing(void *args)
 
         while (STAILQ_EMPTY(&task_queues[RUNNING_QUEUE]))
         {
-            printf("Thread ID %i waits.\n", tid);
+            //printf("Thread ID %i waits.\n", tid);
 
             // Terminate thread.
             if (done_scheduling && done_reading)
@@ -192,10 +241,75 @@ void *cpu_processing(void *args)
 
             pthread_cond_wait(&new_task_signal, &queues_lock[RUNNING_QUEUE]);
         }
-        printf("Thread ID %i gets the lock.\n", tid);
-        new_task_ready = 0;
-        curr_task = dequeue(&task_queues[RUNNING_QUEUE]);
         printf("Task %s is being processed by thread id %i\n", curr_task.task_name, tid);
+        //printf("Thread ID %i gets the lock.\n", tid);
+        curr_task = dequeue(&task_queues[RUNNING_QUEUE]);
+
+        // get correct run_time
+        if (curr_task.task_length <= TIME_SLICE)
+        {
+            run_time = curr_task.task_length;
+            finish = 1;
+        }
+
+        if (curr_task.is_first_run)
+        {
+            curr_task.is_first_run = 0;
+
+            // get the first runtime
+            clock_gettime(CLOCK_REALTIME, &first_run_time);
+
+            // get the response time and add it to the total response time
+            // accoriding to their task type.
+            response_time = diff(curr_task.arrival_time, first_run_time);
+            recording.total_response_time[curr_task.task_type] += (time_t) (response_time.tv_sec / MILISECOND_CONVERSION);
+
+            // add count to task_type too
+            recording.task_num[curr_task.task_type] += 1;
+        }
+
+        // run
+        microsleep(run_time);
+
+        if (finish)
+        {
+            // get the arrival runtime
+            clock_gettime(CLOCK_REALTIME, &finish_time);
+
+            // get the turnaround time and add it to the total turnaround time
+            // accoriding to their task type.
+            turnaround_time = diff(curr_task.arrival_time, finish_time);
+            recording.total_turnaround_time[curr_task.task_type] += (time_t) (turnaround_time.tv_sec / MILISECOND_CONVERSION);
+
+            // move to done queue
+            pthread_mutex_lock(&queues_lock[DONE_QUEUE]);
+            enqueue(&task_queues[DONE_QUEUE], curr_task);
+            pthread_mutex_unlock(&queues_lock[DONE_QUEUE]);
+        }
+        else
+        {
+            // decrement remaining time
+            curr_task.task_length -= run_time;
+
+            // check if allot time is more than run time
+            if (curr_task.alloted_time > run_time)
+            {
+                curr_task.alloted_time -= run_time;
+            }
+            else
+            {
+                if (curr_task.task_priority != PRIORITY_3)
+                {
+                    curr_task.task_priority += 1;
+                }
+                curr_task.alloted_time = ALLOTTED_TIME;
+            }
+
+            // move to apprpriate queue
+            pthread_mutex_lock(&queues_lock[curr_task.task_priority]);
+            enqueue(&task_queues[curr_task.task_priority], curr_task);
+            pthread_mutex_unlock(&queues_lock[curr_task.task_priority]);
+        }
 
         pthread_mutex_unlock(&queues_lock[RUNNING_QUEUE]);
     }
@@ -217,7 +331,7 @@ void *task_scheduling(void *args)
         pthread_create(&cpu_threads[i], NULL, cpu_processing, &cpu_threads[i]);
     }
 
-    printf("Scheduling is here\n");
+    //printf("Scheduling is here\n");
 
     while(!done_scheduling)
     {
@@ -227,13 +341,12 @@ void *task_scheduling(void *args)
             {
                 pthread_mutex_lock(&queues_lock[i]);
                 curr_task = dequeue(&task_queues[i]);
-                printf("A task is removed from queue priority %i\n", i+1);
+                //printf("A task is removed from queue priority %i\n", i+1);
                 pthread_mutex_unlock(&queues_lock[i]);
 
                 pthread_mutex_lock(&queues_lock[RUNNING_QUEUE]);
                 enqueue(&task_queues[RUNNING_QUEUE], curr_task);
-                printf("New task is added to the running queue\n");
-                new_task_ready = 1;
+                //printf("New task is added to the running queue\n");
                 pthread_cond_signal(&new_task_signal);
                 pthread_mutex_unlock(&queues_lock[RUNNING_QUEUE]);
             }
@@ -251,7 +364,6 @@ void *task_scheduling(void *args)
         empty_queues = 0;
     }
 
-    new_task_ready = 1;
     pthread_cond_broadcast(&new_task_signal);
     printf("Signal sent\n");
 
@@ -271,6 +383,33 @@ void *task_scheduling(void *args)
     return NULL;
 }
 
+time_spec diff(time_spec start, time_spec end)
+{
+	time_spec temp;
+	if ((end.tv_nsec-start.tv_nsec)<0) {
+		temp.tv_sec = end.tv_sec-start.tv_sec-1;
+		temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+	} else {
+		temp.tv_sec = end.tv_sec-start.tv_sec;
+		temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+	}
+	return temp;
+}
+
+static void microsleep(unsigned int usecs)
+{
+    long seconds = usecs / USEC_PER_SEC;
+    long nanos   = (usecs % USEC_PER_SEC) * NANOS_PER_USEC;
+    struct timespec t = { .tv_sec = seconds, .tv_nsec = nanos };
+    int ret;
+    do
+    {
+        ret = nanosleep( &t, &t );
+        // need to loop, `nanosleep` might return before sleeping
+        // for the complete time (see `man nanosleep` for details)
+    } while (ret == -1 && (t.tv_sec || t.tv_nsec));
+}
+
 int main(int argc, char *argv[])
 {
     pthread_t scheduler;
@@ -287,12 +426,21 @@ int main(int argc, char *argv[])
 
     if (argc == 4)
     {
+        // Initialize the time recording data structure.
+        recording.total_turnaround_time = malloc(sizeof(time_t) * TASK_TYPES);
+        recording.total_response_time = malloc(sizeof(time_t) * TASK_TYPES);
+        recording.task_num = malloc(sizeof(int) * TASK_TYPES);
+
+        for (int i = 0; i < TASK_TYPES; i++)
+        {
+            recording.total_turnaround_time[i] = 0;
+            recording.total_response_time[i] = 0;
+            recording.task_num[i] = 0;
+        }
+
+        // Initialize queues and locks for those queues.
         task_queues = malloc(sizeof(queue_head) * NUM_QUEUE);
         queues_lock = malloc(sizeof(pthread_mutex_t) * NUM_QUEUE);
-
-        cpu_threads = atoi(argv[1]);
-        boost_time = atoi(argv[2]);
-        task_stream = fopen(argv[3], "r");
 
         for (int i = 0; i < NUM_QUEUE; i++)
         {
@@ -300,8 +448,12 @@ int main(int argc, char *argv[])
             pthread_mutex_init(&queues_lock[i], NULL);
         }
 
+        cpu_threads = atoi(argv[1]);
+        boost_time = atoi(argv[2]);
+        task_stream = fopen(argv[3], "r");
         printf("Starting MLFQ simulation with %i threads and boost time of %i miliseconds.\n", cpu_threads, boost_time);
 
+        // Launch the scheduler.
         pthread_create(&scheduler, NULL, task_scheduling, &cpu_threads);
 
         line = malloc(sizeof(char) * MAX_LINE_LEN);
@@ -312,10 +464,11 @@ int main(int argc, char *argv[])
             
             if (args_count == 4)
             {
+                // Add new tasks from a file to priority 1 queue.
                 curr_task = parse_task(line);
                 pthread_mutex_lock(&queues_lock[PRIORITY_1]);
                 enqueue(&task_queues[PRIORITY_1], curr_task);
-                printf("New task is added to queue priority 1.\n");
+                //printf("New task is added to queue priority 1.\n");
                 pthread_mutex_unlock(&queues_lock[PRIORITY_1]);
             }
             else if (args_count == 2)
@@ -327,6 +480,7 @@ int main(int argc, char *argv[])
                     printf("Invalid format for DELAY task.\n");
                     exit(EXIT_FAILURE);
                 }
+                printf("Main thread will sleep for %i miliseconds\n", delay_time);
                 sleep(delay_time * MILISECOND_CONVERSION);
             }
             else
