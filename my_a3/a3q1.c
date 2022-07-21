@@ -111,9 +111,9 @@ time_spec diff(time_spec start, time_spec end);
 
 time_t timespec_to_usec(time_spec time);
 
-void enqueue(queue_head *head, task curr_task);
+void enqueue(queue_head *head_ptr, task curr_task);
 
-task dequeue(queue_head *head);
+task dequeue(queue_head *head_ptr);
 
 
 // Count the number of space in a line
@@ -131,6 +131,8 @@ void *cpu_processing(void *args);
 void *task_scheduling(void *args);
 
 void *priority_boosting(void *args);
+
+void priority_boosting_queue(queue_head* head_ptr);
 
 static void microsleep(unsigned int usecs)
 {
@@ -165,20 +167,20 @@ time_t timespec_to_usec(time_spec time)
     return time_in_usec;
 }
 
-void enqueue(queue_head *head, task curr_task)
+void enqueue(queue_head *head_ptr, task curr_task)
 {
     entry* new_entry = malloc(sizeof(entry));
     new_entry->task_data = curr_task;
 
-    STAILQ_INSERT_TAIL(head, new_entry, queue_entries);
+    STAILQ_INSERT_TAIL(head_ptr, new_entry, queue_entries);
 }
 
-task dequeue(queue_head *head)
+task dequeue(queue_head *head_ptr)
 {
-    entry* head_entry = STAILQ_FIRST(head);
+    entry* head_entry = STAILQ_FIRST(head_ptr);
     task head_task = head_entry->task_data;
 
-    STAILQ_REMOVE_HEAD(head, queue_entries);
+    STAILQ_REMOVE_HEAD(head_ptr, queue_entries);
 
     return head_task;
 }
@@ -465,13 +467,17 @@ void *priority_boosting(void *args)
     {
         sleep(boost_time / USEC_PER_SEC);
 
+        pthread_mutex_lock(&queues_lock[RUNNING_QUEUE]);
+        priority_boosting_queue(&task_queues[RUNNING_QUEUE]);
+        pthread_mutex_unlock(&queues_lock[RUNNING_QUEUE]);
+
         for (int i = PRIORITY_2; i <= PRIORITY_3; i++)
         {
             pthread_mutex_lock(&queues_lock[i]);
 
             while (!STAILQ_EMPTY(&task_queues[i]))
             {
-                printf("YYYAYAYAYAYAYYAYAYA");
+                printf("YYYAYAYAYAYAYYAYAYA\n");
                 curr_task = dequeue(&task_queues[i]);
                 curr_task.task_priority = PRIORITY_1;
                 curr_task.alloted_time = ALLOTTED_TIME;
@@ -483,9 +489,38 @@ void *priority_boosting(void *args)
 
             pthread_mutex_unlock(&queues_lock[i]);
         }
+
+        pthread_mutex_lock(&queues_lock[TASK_SCHEDULE_QUEUE]);
+        priority_boosting_queue(&task_queues[TASK_SCHEDULE_QUEUE]);
+        pthread_mutex_unlock(&queues_lock[TASK_SCHEDULE_QUEUE]);
     }
 
     return NULL;
+}
+
+void priority_boosting_queue(queue_head* head_ptr)
+{
+    queue_head temp_head;
+    STAILQ_INIT(&temp_head);
+
+    task curr_task;
+
+    while (!STAILQ_EMPTY(head_ptr))
+    {
+        curr_task = dequeue(head_ptr);
+        //printf("Before: Task %s has a priority of %i with %ld alloted time.\n", curr_task.task_name, curr_task.task_priority, curr_task.alloted_time);
+        curr_task.task_priority = PRIORITY_1;
+        curr_task.alloted_time = ALLOTTED_TIME;
+        //printf("After: Task %s has a priority of %i with %ld alloted time.\n", curr_task.task_name, curr_task.task_priority, curr_task.alloted_time);
+        enqueue(&temp_head, curr_task);
+    }
+
+    while (!STAILQ_EMPTY(&temp_head))
+    {
+        curr_task = dequeue(&temp_head);
+        //printf("Now: Task %s has a priority of %i with %ld alloted time.\n", curr_task.task_name, curr_task.task_priority, curr_task.alloted_time);
+        enqueue(head_ptr, curr_task);
+    }
 }
 
 int main(int argc, char *argv[])
@@ -582,6 +617,18 @@ int main(int argc, char *argv[])
 
         pthread_join(scheduler, NULL);
         pthread_join(priority_booster, NULL);
+
+        printf("Total turnaround time per type:\n");
+        printf("    Type %i: %li usec\n", TASK_TYPE_1, bookeeper.total_turnaround_time[TASK_TYPE_1]);
+        printf("    Type %i: %li usec\n", TASK_TYPE_2, bookeeper.total_turnaround_time[TASK_TYPE_2]);
+        printf("    Type %i: %li usec\n", TASK_TYPE_3, bookeeper.total_turnaround_time[TASK_TYPE_3]);
+        printf("    Type I/O: %li usec\n", bookeeper.total_turnaround_time[TASK_TYPE_IO]);
+
+        printf("Total response time per type:\n");
+        printf("    Type %i: %li usec\n", TASK_TYPE_1, bookeeper.total_response_time[TASK_TYPE_1]);
+        printf("    Type %i: %li usec\n", TASK_TYPE_2, bookeeper.total_response_time[TASK_TYPE_2]);
+        printf("    Type %i: %li usec\n", TASK_TYPE_3, bookeeper.total_response_time[TASK_TYPE_3]);
+        printf("    Type I/O: %li usec\n", bookeeper.total_response_time[TASK_TYPE_IO]);
 
         printf("End of file.\n");
 
