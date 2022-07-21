@@ -79,7 +79,7 @@ typedef struct TASK
     time_t task_length;
     int odd_of_io;
     int task_priority;
-    int alloted_time;
+    time_t alloted_time;
     int is_first_run;
     time_spec arrival_time;
 } task;
@@ -99,6 +99,8 @@ pthread_mutex_t *queues_lock;
 pthread_mutex_t simulation_bookeeper_lock;
 
 pthread_cond_t new_task_signal = PTHREAD_COND_INITIALIZER;
+
+int boost_time;
 
 int done_scheduling = 0;
 int done_reading = 0;
@@ -123,8 +125,12 @@ task parse_task(char *line);
 // Return a task object from parsing an input line.
 int parse_delay_time(char *line);
 
+void *cpu_processing(void *args);
+
 // Running the scheduler thread
 void *task_scheduling(void *args);
+
+void *priority_boosting(void *args);
 
 static void microsleep(unsigned int usecs)
 {
@@ -214,7 +220,7 @@ task parse_task(char *line)
 
     curr_task.task_priority = 1;
 
-    curr_task.alloted_time = TIME_SLICE;
+    curr_task.alloted_time = ALLOTTED_TIME;
 
     curr_task.is_first_run = 1;
 
@@ -281,7 +287,7 @@ void *cpu_processing(void *args)
         }
         //printf("Thread ID %i gets the lock.\n", tid);
         curr_task = dequeue(&task_queues[RUNNING_QUEUE]);
-        printf("Task %s is being processed by thread id %i\n", curr_task.task_name, tid);
+        //printf("Task %s is being processed by thread id %i\n", curr_task.task_name, tid);
 
         // get correct run_time
         if (curr_task.task_length <= TIME_SLICE)
@@ -334,21 +340,22 @@ void *cpu_processing(void *args)
             // decrement remaining time
             curr_task.task_length -= run_time_usec;
 
-            printf("Remaining time for task %s is %ld usecs.\n", curr_task.task_name, curr_task.task_length);
+            //printf("Remaining time for task %s is %ld usecs.\n", curr_task.task_name, curr_task.task_length);
 
-            // // check if allot time is more than run time
-            // if (curr_task.alloted_time > run_time_usec)
-            // {
-            //     curr_task.alloted_time -= run_time_usec;
-            // }
-            // else
-            // {
-            //     if (curr_task.task_priority != PRIORITY_3)
-            //     {
-            //         curr_task.task_priority += 1;
-            //     }
-            //     curr_task.alloted_time = ALLOTTED_TIME;
-            // }
+            // check if allot time is more than run time
+            if (curr_task.alloted_time > run_time_usec)
+            {
+                curr_task.alloted_time -= run_time_usec;
+                //printf("Remaining allottemnt time for task %s is %ld usecs.\n", curr_task.task_name, curr_task.alloted_time);
+            }
+            else
+            {
+                if (curr_task.task_priority != PRIORITY_3)
+                {
+                    curr_task.task_priority += 1;
+                }
+                curr_task.alloted_time = ALLOTTED_TIME;
+            }
 
             // move to task scheduling queue
             pthread_mutex_lock(&queues_lock[TASK_SCHEDULE_QUEUE]);
@@ -381,28 +388,31 @@ void *task_scheduling(void *args)
 
     while(!done_scheduling)
     {
+        pthread_mutex_lock(&queues_lock[TASK_SCHEDULE_QUEUE]);
+
         // Read all tasks available from the task loader
         while (!STAILQ_EMPTY(&task_queues[TASK_SCHEDULE_QUEUE]))
         {
-            pthread_mutex_lock(&queues_lock[TASK_SCHEDULE_QUEUE]);
             curr_task = dequeue(&task_queues[TASK_SCHEDULE_QUEUE]);
             curr_priority = curr_task.task_priority;
             curr_task_type = curr_task.task_type;
-            pthread_mutex_unlock(&queues_lock[TASK_SCHEDULE_QUEUE]);
 
             pthread_mutex_lock(&queues_lock[curr_priority]);
             enqueue(&task_queues[curr_priority], curr_task);
             pthread_mutex_unlock(&queues_lock[curr_priority]);
         }
 
+        pthread_mutex_unlock(&queues_lock[TASK_SCHEDULE_QUEUE]);
+
         for (int i = PRIORITY_1; i <= PRIORITY_3; i++)
         {
-            if (!STAILQ_EMPTY(&task_queues[i]))
+
+            pthread_mutex_lock(&queues_lock[i]);
+
+            while (!STAILQ_EMPTY(&task_queues[i]))
             {
-                pthread_mutex_lock(&queues_lock[i]);
                 curr_task = dequeue(&task_queues[i]);
                 printf("A task %s is removed from queue priority %i\n", curr_task.task_name, i);
-                pthread_mutex_unlock(&queues_lock[i]);
 
                 pthread_mutex_lock(&queues_lock[RUNNING_QUEUE]);
                 enqueue(&task_queues[RUNNING_QUEUE], curr_task);
@@ -410,11 +420,13 @@ void *task_scheduling(void *args)
                 pthread_cond_signal(&new_task_signal);
                 pthread_mutex_unlock(&queues_lock[RUNNING_QUEUE]);
             }
-            else
-            {
-                empty_queues += 1;
-            }
+
+            pthread_mutex_unlock(&queues_lock[i]);
+
+            empty_queues += 1;
         }
+
+        pthread_mutex_lock(&queues_lock[TASK_SCHEDULE_QUEUE]);
 
         if (done_reading && 
             STAILQ_EMPTY(&task_queues[TASK_SCHEDULE_QUEUE]) && 
@@ -428,6 +440,8 @@ void *task_scheduling(void *args)
         {
             empty_queues = 0;
         }
+
+        pthread_mutex_unlock(&queues_lock[TASK_SCHEDULE_QUEUE]);
     }
 
     pthread_cond_broadcast(&new_task_signal);
@@ -441,12 +455,44 @@ void *task_scheduling(void *args)
     return NULL;
 }
 
+void *priority_boosting(void *args)
+{
+    (void) args;
+
+    task curr_task;
+
+    while(!done_scheduling)
+    {
+        sleep(boost_time / USEC_PER_SEC);
+
+        for (int i = PRIORITY_2; i <= PRIORITY_3; i++)
+        {
+            pthread_mutex_lock(&queues_lock[i]);
+
+            while (!STAILQ_EMPTY(&task_queues[i]))
+            {
+                printf("YYYAYAYAYAYAYYAYAYA");
+                curr_task = dequeue(&task_queues[i]);
+                curr_task.task_priority = PRIORITY_1;
+                curr_task.alloted_time = ALLOTTED_TIME;
+
+                pthread_mutex_lock(&queues_lock[PRIORITY_1]);
+                enqueue(&task_queues[PRIORITY_1], curr_task);
+                pthread_mutex_unlock(&queues_lock[PRIORITY_1]);
+            }
+
+            pthread_mutex_unlock(&queues_lock[i]);
+        }
+    }
+
+    return NULL;
+}
+
 int main(int argc, char *argv[])
 {
-    pthread_t scheduler;
+    pthread_t scheduler, priority_booster;
 
     int cpu_threads;
-    int boost_time;
     FILE *task_stream;
 
     int args_count;
@@ -492,6 +538,7 @@ int main(int argc, char *argv[])
 
         // Launch the scheduler.
         pthread_create(&scheduler, NULL, task_scheduling, &cpu_threads);
+        pthread_create(&priority_booster, NULL, priority_boosting, &cpu_threads);
 
         line = malloc(sizeof(char) * MAX_LINE_LEN);
 
@@ -534,6 +581,8 @@ int main(int argc, char *argv[])
         done_reading = 1;
 
         pthread_join(scheduler, NULL);
+        pthread_join(priority_booster, NULL);
+
         printf("End of file.\n");
 
         exit(EXIT_SUCCESS);
