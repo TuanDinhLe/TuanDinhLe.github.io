@@ -31,6 +31,8 @@
 #define NANOS_PER_USEC 1000
 #define USEC_PER_SEC   1000000
 
+#define IO_UPPERBOUND   100
+
 // The task scheduler queue
 #define TASK_SCHEDULE_QUEUE 0
 
@@ -77,7 +79,7 @@ typedef struct TASK
     char* task_name;
     int task_type;
     time_t task_length;
-    int odd_of_io;
+    int io_odd;
     int task_priority;
     time_t alloted_time;
     int is_first_run;
@@ -218,7 +220,7 @@ task parse_task(char *line)
     curr_task.task_length = (time_t) atoi(curr);
 
     curr = strtok(NULL, " ");
-    curr_task.odd_of_io = atoi(curr);
+    curr_task.io_odd = atoi(curr);
 
     curr_task.task_priority = 1;
 
@@ -250,11 +252,9 @@ int parse_delay_time(char *line)
 
 void *cpu_processing(void *args)
 {
-    //(void) args;
-
+    int io_odd;
     int tid = *(int *) args;
     time_t run_time_usec = TIME_SLICE;
-    int finish = 0;
 
     task curr_task;
 
@@ -262,6 +262,9 @@ void *cpu_processing(void *args)
     time_spec turnaround_time;
     time_spec first_run_time;
     time_spec response_time;
+
+    srand(time(NULL));
+    io_odd = rand() % (IO_UPPERBOUND + 1);
 
     printf("Thread ID %i wakes up.\n", tid);
 
@@ -291,13 +294,6 @@ void *cpu_processing(void *args)
         curr_task = dequeue(&task_queues[RUNNING_QUEUE]);
         //printf("Task %s is being processed by thread id %i\n", curr_task.task_name, tid);
 
-        // get correct run_time
-        if (curr_task.task_length <= TIME_SLICE)
-        {
-            run_time_usec = curr_task.task_length;
-            finish = 1;
-        }
-
         if (curr_task.is_first_run)
         {
             curr_task.is_first_run = 0;
@@ -317,10 +313,25 @@ void *cpu_processing(void *args)
             pthread_mutex_unlock(&simulation_bookeeper_lock);
         }
 
+        // get correct run_time
+        if (curr_task.task_length <= TIME_SLICE)
+        {
+            run_time_usec = curr_task.task_length;
+        }
+
+        if (io_odd <= curr_task.io_odd)
+        {
+            run_time_usec = rand() % (TIME_SLICE + 1);
+            printf("Task %s do I/O\n", curr_task.task_name);
+        }
+
         // run
         microsleep(run_time_usec / USEC_PER_SEC);
 
-        if (finish)
+        // decrement remaining time
+        curr_task.task_length -= run_time_usec;
+
+        if (curr_task.task_length <= 0)
         {
             // get the arrival runtime
             clock_gettime(CLOCK_REALTIME, &finish_time);
@@ -339,9 +350,6 @@ void *cpu_processing(void *args)
         }
         else
         {
-            // decrement remaining time
-            curr_task.task_length -= run_time_usec;
-
             //printf("Remaining time for task %s is %ld usecs.\n", curr_task.task_name, curr_task.task_length);
 
             // check if allot time is more than run time
