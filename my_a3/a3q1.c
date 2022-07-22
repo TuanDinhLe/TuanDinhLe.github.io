@@ -6,7 +6,7 @@
 // ASSIGNMENT: assignment 3, QUESTION: question 1
 // 
 // REMARKS: This program implements a simulation
-// of the Multi-level feedback queue scheduling policy.
+// of the multi-level feedback queue scheduling policy.
 //-----------------------------------------
 
 #include <stdio.h>
@@ -19,43 +19,48 @@
 #include <pthread.h>
 #include <time.h>
 
+// Time constants given by assignment 3.
+
 #define TIME_SLICE 50
 #define ALLOTTED_TIME 200
-
-// Number of priority queues
-#define NUM_PRIORITY_QUEUE 3
-
-// Number of queues used in the simulation
-#define NUM_QUEUE 5
 
 #define NANOS_PER_USEC 1000
 #define USEC_PER_SEC   1000000
 
+#define MILISEC_PER_SEC 1000
+
 #define IO_UPPERBOUND   100
 
-// The task scheduler queue
+// Number of priority queues.
+#define NUM_PRIORITY_QUEUE 3
+
+// Number of queues used in the simulation.
+#define NUM_QUEUE 5
+
+// The task scheduler queue index.
 #define TASK_SCHEDULE_QUEUE 0
 
-// Indexes of ready queues with descending order of priority
+// Indexes of ready queues with descending order of priority.
 #define PRIORITY_1 1 
 #define PRIORITY_2 2
 #define PRIORITY_3 3
 
-// The running queue
+// The running queue that the cpu threads will get task from.
 #define RUNNING_QUEUE 4
 
-// Max number of chaarcters of a line in task.txt
+// Max number of characters of a line from task.txt .
 #define MAX_LINE_LEN 100
 
-// Max number of chaarcters of a line in task.txt
-#define MAX_ARG_LEN 50
+// Max number of characters of a task name from task.txt .
+#define MAX_ARG_LEN 100
 
-// Number of args in a task
+// Number of args in a task.
 #define TASK_ARGS 4
 
-// Number of task types
+// Number of task types.
 #define TASK_TYPES 4
 
+// Task type indexes.
 #define TASK_TYPE_1 0
 #define TASK_TYPE_2 1
 #define TASK_TYPE_3 2
@@ -71,7 +76,8 @@ typedef struct SIMULATION_BOOKEEPER
     int total_task_done;
 } simulation_bookeeper;
 
-STAILQ_HEAD(QUEUE_HEAD, ENTRY);
+// Define type for the wrapper STAILQ provided by <sys/queue.h>.
+STAILQ_HEAD(QUEUE_HEAD, QUEUE_ENTRY);
 typedef struct QUEUE_HEAD queue_head;
 
 typedef struct TASK
@@ -86,24 +92,32 @@ typedef struct TASK
     time_spec arrival_time;
 } task;
 
-typedef struct ENTRY 
+typedef struct QUEUE_ENTRY 
 {
     task task_data;
-    STAILQ_ENTRY(ENTRY) queue_entries;
+    STAILQ_ENTRY(QUEUE_ENTRY) queue_entries;
 } entry;
 
-time_spec simulation_start;
+// Store the relevant data to produce simulation report
+// on turnaround time and response time.
 simulation_bookeeper bookeeper;
 
+// Store the 5 data queues whose indexes are defined above.
 queue_head *task_queues;
 
+// Store 5 locks for each of the queue above.
 pthread_mutex_t *queues_lock;
+
+// Lock when modifying the bookeeper.
 pthread_mutex_t simulation_bookeeper_lock;
 
+// Signal that cpu threads listen from the scheduler thread.
 pthread_cond_t new_task_signal = PTHREAD_COND_INITIALIZER;
 
+// Time to sleep until a priority boosting is done.
 int boost_time;
 
+// Conditions to end simulation.
 int done_scheduling = 0;
 int done_reading = 0;
 
@@ -111,14 +125,15 @@ static void microsleep(unsigned int usecs);
 
 time_spec diff(time_spec start, time_spec end);
 
+// Convert from time_spec to microseconds.
 time_t timespec_to_usec(time_spec time);
 
+// Wrapper function to insert and remove a task from a queue.
 void enqueue(queue_head *head_ptr, task curr_task);
-
 task dequeue(queue_head *head_ptr);
 
-
-// Count the number of space in a line
+// Count the number of space in a line to distinguish
+// between a task and a delay.
 int space_count(char *line);
 
 // Return a task object from parsing an input line.
@@ -127,14 +142,19 @@ task parse_task(char *line);
 // Return a task object from parsing an input line.
 int parse_delay_time(char *line);
 
-void *cpu_processing(void *args);
-
-// Running the scheduler thread
-void *task_scheduling(void *args);
-
+// Running the priority booster thread.
 void *priority_boosting(void *args);
 
+// Internal function that the priority booster thread can
+// call to raise priority of tasks that are not in the ready
+// queues (more details at function's implementation).
 void priority_boosting_queue(queue_head* head_ptr);
+
+// Running the cpu thread.
+void *cpu_processing(void *args);
+
+// Running the scheduler thread.
+void *task_scheduling(void *args);
 
 static void microsleep(unsigned int usecs)
 {
@@ -152,6 +172,9 @@ static void microsleep(unsigned int usecs)
 
 time_spec diff(time_spec start, time_spec end)
 {
+    printf("Start time is: %ld\n", timespec_to_usec(start));
+    printf("End time is: %ld\n", timespec_to_usec(end));
+
 	time_spec temp;
 	if ((end.tv_nsec-start.tv_nsec)<0) {
 		temp.tv_sec = end.tv_sec-start.tv_sec-1;
@@ -160,7 +183,11 @@ time_spec diff(time_spec start, time_spec end)
 		temp.tv_sec = end.tv_sec-start.tv_sec;
 		temp.tv_nsec = end.tv_nsec-start.tv_nsec;
 	}
+
+    printf("Difference time is: %ld\n", timespec_to_usec(temp));
+
 	return temp;
+
 }
 
 time_t timespec_to_usec(time_spec time)
@@ -183,6 +210,8 @@ task dequeue(queue_head *head_ptr)
     task head_task = head_entry->task_data;
 
     STAILQ_REMOVE_HEAD(head_ptr, queue_entries);
+
+    free(head_entry);
 
     return head_task;
 }
@@ -254,6 +283,8 @@ void *cpu_processing(void *args)
 {
     int io_odd;
     int tid = *(int *) args;
+
+    // The actual time that a cpu thread will 'work'
     time_t run_time_usec = TIME_SLICE;
 
     task curr_task;
@@ -272,9 +303,6 @@ void *cpu_processing(void *args)
     {
         //printf("Thread ID %i waits for lock.\n", tid);
         pthread_mutex_lock(&queues_lock[RUNNING_QUEUE]);
-
-        // If lower_case thread start first, it will yield the lock
-        // and wait for signal to wake up.
 
         while (STAILQ_EMPTY(&task_queues[RUNNING_QUEUE]))
         {
@@ -298,7 +326,7 @@ void *cpu_processing(void *args)
         {
             curr_task.is_first_run = 0;
 
-            // get the first runtime
+            // get the first runtime of this task
             clock_gettime(CLOCK_REALTIME, &first_run_time);
 
             // get the response time and add it to the total response time
@@ -309,11 +337,12 @@ void *cpu_processing(void *args)
             pthread_mutex_lock(&simulation_bookeeper_lock);
             bookeeper.total_response_time[curr_task.task_type] += timespec_to_usec(response_time);
             bookeeper.task_num[curr_task.task_type] += 1;
-            printf("Current count for task type %i is %i.\n", curr_task.task_type, bookeeper.task_num[curr_task.task_type]);
+            //printf("Current count for task type %i is %i.\n", curr_task.task_type, bookeeper.task_num[curr_task.task_type]);
             pthread_mutex_unlock(&simulation_bookeeper_lock);
         }
 
         // get correct run_time
+
         if (curr_task.task_length <= TIME_SLICE)
         {
             run_time_usec = curr_task.task_length;
@@ -322,13 +351,13 @@ void *cpu_processing(void *args)
         if (io_odd <= curr_task.io_odd)
         {
             run_time_usec = rand() % (TIME_SLICE + 1);
-            printf("Task %s do I/O\n", curr_task.task_name);
+            //printf("Task %s do I/O\n", curr_task.task_name);
         }
 
         // run
-        microsleep(run_time_usec / USEC_PER_SEC);
+        microsleep(run_time_usec);
 
-        // decrement remaining time
+        // decrement remaining task time
         curr_task.task_length -= run_time_usec;
 
         if (curr_task.task_length <= 0)
@@ -343,10 +372,11 @@ void *cpu_processing(void *args)
 
             pthread_mutex_lock(&simulation_bookeeper_lock);
             bookeeper.total_turnaround_time[curr_task.task_type] += timespec_to_usec(turnaround_time);
+            printf("Current total turnaround time for task type %i is %ld", curr_task.task_type, bookeeper.total_turnaround_time[curr_task.task_type]);
             bookeeper.total_task_done += 1;
             pthread_mutex_unlock(&simulation_bookeeper_lock);
 
-            // Done (?)
+            free(curr_task.task_name);
         }
         else
         {
@@ -422,7 +452,7 @@ void *task_scheduling(void *args)
             while (!STAILQ_EMPTY(&task_queues[i]))
             {
                 curr_task = dequeue(&task_queues[i]);
-                printf("A task %s is removed from queue priority %i\n", curr_task.task_name, i);
+                //printf("A task %s is removed from queue priority %i\n", curr_task.task_name, i);
 
                 pthread_mutex_lock(&queues_lock[RUNNING_QUEUE]);
                 enqueue(&task_queues[RUNNING_QUEUE], curr_task);
@@ -455,12 +485,14 @@ void *task_scheduling(void *args)
     }
 
     pthread_cond_broadcast(&new_task_signal);
-    printf("Signal sent\n");
+    //printf("Signal sent\n");
 
     for (int i = 0; i < num_cpu_threads; i++)
     {
         pthread_join(cpu_threads[i], NULL);
     }
+
+    free(cpu_threads);
 
     return NULL;
 }
@@ -473,7 +505,7 @@ void *priority_boosting(void *args)
 
     while(!done_scheduling)
     {
-        sleep(boost_time / USEC_PER_SEC);
+        sleep(boost_time / MILISEC_PER_SEC);
 
         pthread_mutex_lock(&queues_lock[RUNNING_QUEUE]);
         priority_boosting_queue(&task_queues[RUNNING_QUEUE]);
@@ -485,7 +517,6 @@ void *priority_boosting(void *args)
 
             while (!STAILQ_EMPTY(&task_queues[i]))
             {
-                printf("YYYAYAYAYAYAYYAYAYA\n");
                 curr_task = dequeue(&task_queues[i]);
                 curr_task.task_priority = PRIORITY_1;
                 curr_task.alloted_time = ALLOTTED_TIME;
@@ -546,8 +577,6 @@ int main(int argc, char *argv[])
 
     if (argc == 4)
     {
-        clock_gettime(CLOCK_REALTIME, &simulation_start);
-
         // Initialize the time bookeeper data structure.
         bookeeper.total_turnaround_time = malloc(sizeof(time_t) * TASK_TYPES);
         bookeeper.total_response_time = malloc(sizeof(time_t) * TASK_TYPES);
@@ -599,7 +628,7 @@ int main(int argc, char *argv[])
                 pthread_mutex_unlock(&simulation_bookeeper_lock);
 
                 pthread_mutex_lock(&queues_lock[TASK_SCHEDULE_QUEUE]);
-                printf("Task %s is added to the task scheduler queue.\n", curr_task.task_name);
+                //printf("Task %s is added to the task scheduler queue.\n", curr_task.task_name);
                 enqueue(&task_queues[TASK_SCHEDULE_QUEUE], curr_task);
                 pthread_mutex_unlock(&queues_lock[TASK_SCHEDULE_QUEUE]);
             }
@@ -613,7 +642,9 @@ int main(int argc, char *argv[])
                     exit(EXIT_FAILURE);
                 }
                 printf("Main thread will sleep for %i miliseconds\n", delay_time);
-                sleep(delay_time / USEC_PER_SEC);
+                
+                // convert from milisecond to second.
+                sleep(delay_time / MILISEC_PER_SEC);
             }
             else
             {
@@ -626,19 +657,26 @@ int main(int argc, char *argv[])
         pthread_join(scheduler, NULL);
         pthread_join(priority_booster, NULL);
 
-        printf("Total turnaround time per type:\n");
-        printf("    Type %i: %li usec\n", TASK_TYPE_1, bookeeper.total_turnaround_time[TASK_TYPE_1]);
-        printf("    Type %i: %li usec\n", TASK_TYPE_2, bookeeper.total_turnaround_time[TASK_TYPE_2]);
-        printf("    Type %i: %li usec\n", TASK_TYPE_3, bookeeper.total_turnaround_time[TASK_TYPE_3]);
-        printf("    Type I/O: %li usec\n", bookeeper.total_turnaround_time[TASK_TYPE_IO]);
+        printf("\nAverage turnaround time per type:\n");
+        printf("    Type %i: %li usec\n", TASK_TYPE_1, bookeeper.total_turnaround_time[TASK_TYPE_1] / bookeeper.task_num[TASK_TYPE_1]);
+        printf("    Type %i: %li usec\n", TASK_TYPE_2, bookeeper.total_turnaround_time[TASK_TYPE_2] / bookeeper.task_num[TASK_TYPE_2]);
+        printf("    Type %i: %li usec\n", TASK_TYPE_3, bookeeper.total_turnaround_time[TASK_TYPE_3] / bookeeper.task_num[TASK_TYPE_3]);
+        printf("    Type I/O: %li usec\n", bookeeper.total_turnaround_time[TASK_TYPE_IO] / bookeeper.task_num[TASK_TYPE_IO]);
 
-        printf("Total response time per type:\n");
-        printf("    Type %i: %li usec\n", TASK_TYPE_1, bookeeper.total_response_time[TASK_TYPE_1]);
-        printf("    Type %i: %li usec\n", TASK_TYPE_2, bookeeper.total_response_time[TASK_TYPE_2]);
-        printf("    Type %i: %li usec\n", TASK_TYPE_3, bookeeper.total_response_time[TASK_TYPE_3]);
-        printf("    Type I/O: %li usec\n", bookeeper.total_response_time[TASK_TYPE_IO]);
+        printf("\nAverage response time per type:\n");
+        printf("    Type %i: %li usec\n", TASK_TYPE_1, bookeeper.total_response_time[TASK_TYPE_1] / bookeeper.task_num[TASK_TYPE_1]);
+        printf("    Type %i: %li usec\n", TASK_TYPE_2, bookeeper.total_response_time[TASK_TYPE_2] / bookeeper.task_num[TASK_TYPE_2]);
+        printf("    Type %i: %li usec\n", TASK_TYPE_3, bookeeper.total_response_time[TASK_TYPE_3] / bookeeper.task_num[TASK_TYPE_3]);
+        printf("    Type I/O: %li usec\n", bookeeper.total_response_time[TASK_TYPE_IO] / bookeeper.task_num[TASK_TYPE_IO]);
 
-        printf("End of file.\n");
+        free(line);
+        free(task_queues);
+        free(queues_lock);
+        free(bookeeper.total_turnaround_time);
+        free(bookeeper.total_response_time);
+        free(bookeeper.task_num);
+
+        printf("\nEnd of simulation.\n");
 
         exit(EXIT_SUCCESS);
     }
