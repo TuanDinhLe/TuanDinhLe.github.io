@@ -1,3 +1,10 @@
+## How to build and run programs:  
+1. Run 'make'.
+2. To run the executable:  
+./fsck-exfat volume.img
+3. To remove executable:
+make clean
+
 `fsck-exfat` volumes
 ====================
 
@@ -77,13 +84,3 @@ Expected output:
 MBR appears to be consistent.
 Inconsistent file system: PercentInUse is 7%, allocation bitmap is 730/2422 => 30%.
 ```
-
-## How to build and run programs:  
-1. Run 'make' will generate executable files for a1-elf.c, a1-procs.c, and a1-threads.c .  
-2. To run:  
-a1-elf: ./a1-elf {replace_with_executable_files_like_hello.out32}  
-a1-procs: ./a1-procs config.txt  
-a1-threads: ./a1-threads config.txt  
-3. Modifying config.txt, then send signal to a1-procs and a1-threads using
-the herder process_id (which will be printed to the screen), then send the
-desired signals => Profit.
